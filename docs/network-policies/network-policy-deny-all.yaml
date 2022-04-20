@@ -1,6 +1,4 @@
-#!/bin/bash
-#
-# Copyright 2018 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
-trap "exit" TERM
-
-if [[ -z "${FRONTEND_ADDR}" ]]; then
-    echo >&2 "FRONTEND_ADDR not specified"
-    exit 1
-fi
-
-set -x
-
-# if one request to the frontend fails, then exit
-STATUSCODE=$(curl --silent --output /dev/stderr --write-out "%{http_code}" http://${FRONTEND_ADDR})
-if test $STATUSCODE -ne 200; then
-    echo "Error: Could not reach frontend - Status code: ${STATUSCODE}"
-    exit 1
-fi
-
-# else, run loadgen
-locust --host="http://${FRONTEND_ADDR}" --headless -u "${USERS:-10}" 2>&1
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
